@@ -1,7 +1,7 @@
 {
     "name": "sgmendez/socialcount",
     "description": "A PHP library get share count from social networks",
-    "keywords": ["facebook", "share", "count", "twitter", "linkedin", "google+"],
+    "keywords": ["facebook", "share", "count", "twitter", "linkedin", "googleplus"],
     "homepage": "https://github.com/sgmendez/socialcount",
     "type": "library",
     "license": "BSD-2-Clause",
