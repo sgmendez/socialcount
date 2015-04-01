@@ -1,5 +1,28 @@
 {
+    "name": "sgmendez/socialcount",
+    "description": "A PHP library get share count from social networks",
+    "keywords": ["facebook", "share", "count", "twitter", "linkedin", "google+"],
+    "homepage": "https://github.com/sgmendez/socialcount",
+    "type": "library",
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Salvador Mendez",
+            "email": "salva@sgmendez.com"
+        }
+    ],
     "require": {
+        "php": ">=5.3.3",
         "sgmendez/json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sgmendez\\SocialCount\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sgmendez\\SocialCount\\Tests\\": "tests/"
+        }
     }
 }
