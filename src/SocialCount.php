@@ -43,14 +43,12 @@ class SocialCount
      * @param string $content Posible values:   like, total, share, click, comment
      * @return int
      */
-    public function getCountFacebook($url, $content = 'total')
-    {
-        $query = 'SELECT like_count, total_count, share_count, click_count, comment_count FROM link_stat WHERE url = "'.$this->checkUrl($url).'"';
-        $fbUrl = 'https://graph.facebook.com/fql?q='.rawurlencode($query);
-        
+    public function getCountFacebook($url)
+    {        
+        $fbUrl = 'https://api.facebook.com/method/links.getStats?urls='.$this->checkUrl($url, 'encode').'&format=json';
         $fbData = $this->decodeJson($this->getCurlGetContents($fbUrl));
-
-        return $this->validateCount($fbData['data'][0][$content.'_count']);
+        
+        return (!empty($fbData[0]['total_count']) ? $fbData[0]['total_count'] : 0);
     }
     
     /**
@@ -62,10 +60,9 @@ class SocialCount
     public function getCountTwitter($url)
     {
         $twUrl = 'http://urls.api.twitter.com/1/urls/count.json?url='.$this->checkUrl($url, 'encode');
-        
         $twData = $this->decodeJson($this->getCurlGetContents($twUrl));
         
-        return $this->validateCount($twData['count']);
+        return (!empty($twData['count'])) ? intval($twData['count']) : 0;
     }
     
     /**
@@ -77,10 +74,9 @@ class SocialCount
     public function getCountLinkedin($url)
     {
         $liUrl = 'http://www.linkedin.com/countserv/count/share?url='.$this->checkUrl($url, 'encode').'&format=json';
-        
         $liData = $this->decodeJson($this->getCurlGetContents($liUrl));
         
-        return $this->validateCount($liData['count']);
+        return (!empty($liData['count'])) ? intval($liData['count']) : 0;
     }
     
     /**
@@ -97,7 +93,49 @@ class SocialCount
         
         $goData = $this->decodeJson($this->getCurlPostContents($urlGo, $postFields, $headers));
         
-        return $this->validateCount($goData[0]['result']['metadata']['globalCounts']['count']);
+        return (!empty($goData[0]['result']['metadata']['globalCounts']['count'])) ? intval($goData[0]['result']['metadata']['globalCounts']['count']) : 0;
+    }
+    
+    /**
+     * Get count in Reddit
+     * 
+     * @param string $url
+     * @return int
+     */
+    public function getCountReddit($url)
+    {
+        $reUrl = 'http://buttons.reddit.com/button_info.json?url='.$this->checkUrl($url, 'encode');
+        $reData = $this->decodeJson($this->getCurlGetContents($reUrl));
+        
+        return (!empty($reData['data']['children'][0]['data']['ups'])) ? intval($reData['data']['children'][0]['data']['ups']) : 0;
+    }
+    
+    /**
+     * Get count in StumbleUpon
+     * 
+     * @param string $url
+     * @return int
+     */
+    public function getCountStumbleUpon($url)
+    {
+        $stUrl = 'http://www.stumbleupon.com/services/1.01/badge.getinfo?url='.$this->checkUrl($url, 'encode');
+        $stData = $this->decodeJson($this->getCurlGetContents($stUrl));
+        
+        return (!empty($stData['result']['views'])) ? intval($stData['result']['views']) : 0;
+    }
+    
+    /**
+     * Get count in Pinterest
+     * 
+     * @param string $url
+     * @return int
+     */
+    public function getCountPinterest($url)
+    {
+        $piUrl = 'http://api.pinterest.com/v1/urls/count.json?callback=count&url='.$this->checkUrl($url, 'encode');
+        $piData = $this->decodeJson($this->getCurlGetContents($piUrl));
+        
+        return (!empty($piData['count'])) ? intval($piData['count']) : 0;
     }
     
     /**
@@ -116,7 +154,7 @@ class SocialCount
         
         $json = new Json();
         
-        return $json->decode($jsonData);
+        return $json->decode($this->convertJsonp($jsonData));
     }
     
     /**
@@ -139,16 +177,16 @@ class SocialCount
         curl_setopt($ch, CURLOPT_TIMEOUT, self::CURL_TIMEOUT);
         curl_setopt($ch,CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch,CURLOPT_MAXREDIRS, 2);//only 2 redirects
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
                 
         $result = curl_exec($ch);
 
         if(curl_errno($ch))
         {
-            throw new RuntimeException('ERROR CURL: '.curl_error($ch), curl_errno($ch), self::EXCEPTION_CURL);
+            throw new RuntimeException('ERROR CURL [No '.curl_errno($ch).']: '.curl_error($ch).' | URL: '.$url, self::EXCEPTION_CURL);
         }
         
         return $result;
@@ -172,26 +210,17 @@ class SocialCount
         curl_setopt($ch, CURLOPT_TIMEOUT, self::CURL_TIMEOUT);
         curl_setopt($ch,CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch,CURLOPT_MAXREDIRS, 2);//only 2 redirects
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
         
         $result = curl_exec($ch);
 
         if(curl_errno($ch))
         {
-            throw new RuntimeException('ERROR CURL: '.curl_error($ch), curl_errno($ch), self::EXCEPTION_CURL);
+            throw new RuntimeException('ERROR CURL [No '.curl_errno($ch).']: '.curl_error($ch).' | URL: '.$url, self::EXCEPTION_CURL);
         }
         
         return $result;
-    }
-    
-    /**
-     * Validate count for social network, convert int
-     * 
-     * @param mixed $value
-     * @return int
-     */
-    private function validateCount($value)
-    {
-        return (!empty($value)) ? intval($value) : 0;
     }
     
     /**
@@ -247,6 +276,23 @@ class SocialCount
         }
         
         return $urlPack;
+    }
+    
+    /**
+     * When $jsonData is jsonp convert to json for decode
+     * 
+     * @param stirng $jsonData
+     * @return string
+     */
+    private function convertJsonp($jsonData)
+    {
+        $jsonp = $jsonData;
+        if ($jsonData[0] !== '[' && $jsonData[0] !== '{')
+        {
+            $jsonp = trim(substr($jsonp, strpos($jsonp, '(')), '();');
+        }
+        
+        return $jsonp;
     }
 }
 
