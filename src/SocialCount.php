@@ -19,7 +19,7 @@
 
 namespace Sgmendez\SocialCount;
 
-require __DIR__ . '/../vendor/autoload.php';
+//require __DIR__ . '/../vendor/autoload.php';
 
 use RuntimeException;
 use Sgmendez\Json\Json;
