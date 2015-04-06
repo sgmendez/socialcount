@@ -36,7 +36,7 @@ into your `composer.json` file:
 json
 {
     "require": {
-        "sgmendez/socialcount": "1.0.*"
+        "sgmendez/socialcount": "*"
     }
 }
 ```
