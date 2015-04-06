@@ -38,74 +38,49 @@ class SocialCountTest extends PHPUnit_Framework_TestCase
     
     public function testGetCountFacebook()
     {
-        $count = $this->socialCount->getCountFacebook(self::URL);
-        
-        $this->assertContainsOnly('int', array($count));
-        
-        //Check exception for bad url        
-        try
-        {
-            $this->socialCount->getCountFacebook('url not valid');
-        } 
-        catch (InvalidArgumentException $ex) 
-        {
-            $this->assertEquals(1, $ex->getCode());
-            return;
-        }
-        
-        $this->fail('An expected InvalidArgumentException has not been thrown');
+        $this->checkValidValues('getCountFacebook');
     }
     
     public function testGetCountTwitter()
     {
-        $count = $this->socialCount->getCountTwitter(self::URL);
-        
-        $this->assertContainsOnly('int', array($count));
-        
-        //Check exception for bad url        
-        try
-        {
-            $this->socialCount->getCountTwitter('url not valid');
-        } 
-        catch (InvalidArgumentException $ex) 
-        {
-            $this->assertEquals(1, $ex->getCode());
-            return;
-        }
-        
-        $this->fail('An expected InvalidArgumentException has not been thrown');
+        $this->checkValidValues('getCountTwitter');
     }
     
     public function testGetCountLinkedin()
     {
-        $count = $this->socialCount->getCountLinkedin(self::URL);
-        
-        $this->assertContainsOnly('int', array($count));
-        
-        //Check exception for bad url        
-        try
-        {
-            $this->socialCount->getCountLinkedin('url not valid');
-        } 
-        catch (InvalidArgumentException $ex) 
-        {
-            $this->assertEquals(1, $ex->getCode());
-            return;
-        }
-        
-        $this->fail('An expected InvalidArgumentException has not been thrown');
+        $this->checkValidValues('getCountLinkedin');
     }
     
     public function testGetCountGoogle()
     {
-        $count = $this->socialCount->getCountGoogle(self::URL);
+        $this->checkValidValues('getCountGoogle');
+    }
+    
+    public function testGetCountReddit()
+    {
+        $this->checkValidValues('getCountReddit');
+    }
+    
+    public function testGetCountStumbleUpon()
+    {
+        $this->checkValidValues('getCountStumbleUpon');
+    }
+    
+    public function testGetCountPinterest()
+    {
+        $this->checkValidValues('getCountPinterest');
+    }
+    
+    private function checkValidValues($methodSocial)
+    {
+        $count = $this->socialCount->$methodSocial(self::URL);
         
         $this->assertContainsOnly('int', array($count));
         
         //Check exception for bad url        
         try
         {
-            $this->socialCount->getCountGoogle('url not valid');
+            $this->socialCount->$methodSocial('url not valid');
         } 
         catch (InvalidArgumentException $ex) 
         {
